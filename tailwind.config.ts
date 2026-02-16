@@ -11,6 +11,8 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        trustBlue: "var(--trust-blue)",
+        successGreen: "var(--success-green)",
       },
     },
   },

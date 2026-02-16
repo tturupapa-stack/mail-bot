@@ -5,9 +5,24 @@
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  --trust-blue: #3b82f6;
+  --success-green: #10b981;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+}
+
+@keyframes copy-flash {
+  0% {
+    background-color: rgb(59 130 246 / 0.1);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.copy-flash {
+  animation: copy-flash 650ms ease-out;
 }

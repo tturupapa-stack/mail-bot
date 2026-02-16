@@ -117,13 +117,15 @@ export default function GeneratePage() {
     { value: "친근", label: "친근", desc: "편안하면서도 프로" },
     { value: "격식", label: "격식", desc: "공문서 수준 격식체" },
   ];
+  const emailLength = email.length;
+  const isEmailNearLimit = emailLength >= 4500;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
       <header className="border-b border-slate-200/60 bg-white/70 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" aria-label="홈으로 이동" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <svg
                 className="w-5 h-5 text-white"
@@ -153,11 +155,11 @@ export default function GeneratePage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-12 gap-6 lg:gap-8">
           {/* Input Section */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">답장 생성하기</h1>
+          <div className="space-y-6 md:col-span-5 lg:col-span-5">
+            <div className="border-b border-slate-200/70 pb-4">
+              <h1 className="text-2xl font-extrabold text-slate-900">답장 생성하기</h1>
               <p className="mt-1 text-sm text-slate-500">
                 받은 이메일을 붙여넣고 원하는 옵션을 선택하세요.
               </p>
@@ -165,10 +167,12 @@ export default function GeneratePage() {
 
             {/* Email Input */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="email-input" className="block text-sm font-semibold text-slate-700 mb-2">
                 받은 이메일 <span className="text-red-400">*</span>
               </label>
               <textarea
+                id="email-input"
+                aria-label="받은 이메일 입력"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="답장할 이메일 내용을 여기에 붙여넣으세요..."
@@ -176,27 +180,47 @@ export default function GeneratePage() {
                 maxLength={5000}
                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none transition-all resize-none"
               />
-              <div className="mt-1 text-right text-xs text-slate-400">
-                {email.length}/5000
+              <div
+                className={`mt-1 text-right text-xs font-medium ${
+                  emailLength >= 5000 ? "text-red-600" : isEmailNearLimit ? "text-amber-600" : "text-slate-400"
+                }`}
+              >
+                {emailLength}/5000
+                {isEmailNearLimit && emailLength < 5000 ? " (제한 임박)" : ""}
               </div>
             </div>
 
             {/* Tone Selection */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <p id="tone-group-label" className="block text-sm font-semibold text-slate-700 mb-2">
                 답장 톤
-              </label>
-              <div className="grid grid-cols-3 gap-3">
+              </p>
+              <div
+                role="radiogroup"
+                aria-labelledby="tone-group-label"
+                className="grid grid-cols-3 gap-3"
+              >
                 {tones.map((t) => (
                   <button
+                    type="button"
                     key={t.value}
                     onClick={() => setTone(t.value)}
-                    className={`rounded-xl border-2 p-3 text-center transition-all ${
+                    role="radio"
+                    aria-checked={tone === t.value}
+                    aria-label={`${t.label} 톤 선택`}
+                    className={`relative rounded-xl border-2 p-3 text-center transition-all ${
                       tone === t.value
-                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-500 ring-offset-2"
                         : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                     }`}
                   >
+                    {tone === t.value && (
+                      <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      </span>
+                    )}
                     <div className="text-sm font-semibold">{t.label}</div>
                     <div className="text-xs mt-0.5 opacity-70">{t.desc}</div>
                   </button>
@@ -206,10 +230,12 @@ export default function GeneratePage() {
 
             {/* Key Message */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="key-message-input" className="block text-sm font-semibold text-slate-700 mb-2">
                 핵심 메시지 <span className="text-slate-400 font-normal">(선택)</span>
               </label>
               <input
+                id="key-message-input"
+                aria-label="핵심 메시지 입력"
                 type="text"
                 value={keyMessage}
                 onChange={(e) => setKeyMessage(e.target.value)}
@@ -223,7 +249,8 @@ export default function GeneratePage() {
             <button
               onClick={handleGenerate}
               disabled={loading || remaining <= 0}
-              className="w-full bg-indigo-600 text-white py-3.5 rounded-xl text-base font-semibold hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-200 hover:shadow-xl disabled:shadow-none flex items-center justify-center gap-2"
+              aria-label="답장 생성하기"
+              className="w-full bg-indigo-600 hover:bg-trustBlue text-white py-3.5 rounded-xl text-base font-semibold disabled:bg-slate-300 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-200 hover:shadow-xl disabled:shadow-none flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -249,12 +276,15 @@ export default function GeneratePage() {
 
             {/* Premium CTA */}
             {remaining <= 2 && (
-              <div className="bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl p-5 text-white">
+              <div className="bg-gradient-to-r from-indigo-500 to-trustBlue rounded-xl p-5 text-white">
                 <div className="text-sm font-semibold">프리미엄으로 업그레이드</div>
                 <p className="text-xs mt-1 text-indigo-100">
                   무제한 답장 생성, 우선 처리, 맞춤 톤 설정 등 더 많은 기능을 이용하세요.
                 </p>
-                <button className="mt-3 bg-white text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-50 transition-colors">
+                <button
+                  aria-label="프리미엄 자세히 보기"
+                  className="mt-3 bg-white text-indigo-600 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-indigo-50 transition-colors"
+                >
                   자세히 보기 (준비 중)
                 </button>
               </div>
@@ -262,21 +292,19 @@ export default function GeneratePage() {
           </div>
 
           {/* Output Section */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900">생성된 답장</h2>
+          <div className="space-y-4 md:col-span-7 lg:col-span-7">
+            <div className="border-b border-slate-200/70 pb-3">
+              <h2 className="text-lg font-bold text-slate-900">생성된 답장</h2>
+            </div>
 
             {replies.length === 0 && !loading && (
-              <div className="bg-white rounded-xl border border-slate-200/60 p-8 text-center">
+              <div className="bg-white rounded-xl border-2 border-dashed border-slate-200/80 p-8 text-center">
                 <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <svg className="w-8 h-8 text-trustBlue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                   </svg>
                 </div>
-                <p className="text-slate-500 text-sm">
-                  왼쪽에서 이메일을 입력하고
-                  <br />
-                  &ldquo;답장 생성하기&rdquo; 버튼을 누르세요.
-                </p>
+                <p className="text-slate-500 text-sm">여기에 AI가 생성한 답장이 표시됩니다</p>
               </div>
             )}
 
@@ -298,19 +326,27 @@ export default function GeneratePage() {
             {replies.map((reply, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl border border-slate-200/60 p-5 hover:shadow-md transition-shadow"
+                className={`relative bg-white rounded-xl border border-slate-200/60 p-5 hover:shadow-md transition-shadow ${
+                  copiedIndex === index ? "copy-flash bg-indigo-500/10" : ""
+                }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
                     {reply.label} 버전
                   </span>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-400">
-                      {reply.content.length}자
+                    <span className="text-xs text-slate-500 font-medium">
+                      글자 수 {reply.content.length}자
                     </span>
                     <button
+                      type="button"
                       onClick={() => handleCopy(reply.content, index)}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors"
+                      aria-label={`${reply.label} 버전 답장 복사`}
+                      className={`inline-flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                        copiedIndex === index
+                          ? "text-successGreen bg-emerald-50"
+                          : "text-slate-500 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50"
+                      }`}
                     >
                       {copiedIndex === index ? (
                         <>
